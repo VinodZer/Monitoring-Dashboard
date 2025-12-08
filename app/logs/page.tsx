@@ -65,6 +65,7 @@ export default function LogsPage() {
                 sort: "-created",
                 filter: filterString,
                 fields: "id,created,instrument_name,alert_type,message,duration,missing_seconds,market_session",
+                skipTotal: true,
             })
             setLogs(result.items)
         } catch (err: any) {

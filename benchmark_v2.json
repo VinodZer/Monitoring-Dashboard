@@ -1,0 +1,12 @@
+[
+  {
+    "test": "Health Check (Network Latency)",
+    "durationMs": 1211.5474999999997
+  },
+  {
+    "test": "Today Filter + skipTotal",
+    "durationMs": 1040.2626999999993,
+    "items": 5,
+    "firstItem": "2025-12-08 11:52:55.504Z"
+  }
+]

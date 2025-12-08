@@ -75,6 +75,7 @@ export function InactivityAlertsLog({ }: InactivityAlertsLogProps) {
         sort: "-created",
         filter: filter,
         fields: "id,created,instrument_name,alert_type,message,duration,missing_seconds,market_session",
+        skipTotal: true,
       })
       setLogs(result.items)
     } catch (err: any) {

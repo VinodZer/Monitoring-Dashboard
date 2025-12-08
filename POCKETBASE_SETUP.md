@@ -75,22 +75,6 @@ To store inactivity alerts, create a new collection named `alert_logs`.
 | `message` | **Text** | |
 | `duration` | **Number** | |
 | `missing_seconds` | **Number** | |
-| `market_session` | **Text** | |
-| `raw_data` | **JSON** | |
-
-    *   **Create Rule**: Public (empty) or Authenticated (`@request.auth.id != ""`) depending on your auth setup.
-    *   **List/View Rules**: Admin only (empty) recommended for logs.
-
-5.  **Indexes (Important for Performance)**:
-    *   Go to **Settings (Gear Icon) > Indexes**.
-    *   Add an index for the `alert_logs` collection: `created`
-    *   This ensures "Today/Yesterday" filters load instantly.
-
-## 5. Retention Policy (Server-Side)
-
-To manage database size, implement the following retention policies via `cron` jobs or manual cleanup:
-
-*   **Ticks Data (`ticks`)**: Keep for **7 Days**.
     *   High volume data, only needed for recent history charts.
 *   **Alert Logs (`alert_logs`)**: Keep for **1 Year**.
     *   Compliance and historical auditing requirement.

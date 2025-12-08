@@ -1,0 +1,78 @@
+{
+  "name": "Market Ticks Monitor",
+  "short_name": "Market Monitor",
+  "description": "Professional real-time market data monitoring with inactivity alerts",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "categories": ["finance", "productivity"],
+  "screenshots": [
+    {
+      "src": "https://cdn.builder.io/api/v1/image/assets%2F212686917e6a43feac2002a1e679ce72%2F4232d9a3a4bc400a91ef28288c1e35f6?format=webp&width=540",
+      "sizes": "540x720",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://cdn.builder.io/api/v1/image/assets%2F212686917e6a43feac2002a1e679ce72%2F4232d9a3a4bc400a91ef28288c1e35f6?format=webp&width=1080",
+      "sizes": "1080x1440",
+      "type": "image/webp",
+      "form_factor": "wide"
+    }
+  ],
+  "icons": [
+    {
+      "src": "https://cdn.builder.io/api/v1/image/assets%2F212686917e6a43feac2002a1e679ce72%2F4232d9a3a4bc400a91ef28288c1e35f6?format=webp&width=192",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn.builder.io/api/v1/image/assets%2F212686917e6a43feac2002a1e679ce72%2F4232d9a3a4bc400a91ef28288c1e35f6?format=webp&width=512",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Market Data",
+      "short_name": "Home",
+      "description": "View real-time market data",
+      "url": "/?tab=kite",
+      "icons": [
+        {
+          "src": "https://cdn.builder.io/api/v1/image/assets%2F212686917e6a43feac2002a1e679ce72%2F4232d9a3a4bc400a91ef28288c1e35f6?format=webp&width=96",
+          "sizes": "96x96",
+          "type": "image/webp"
+        }
+      ]
+    },
+    {
+      "name": "Alert Settings",
+      "short_name": "Alerts",
+      "description": "Configure alert settings",
+      "url": "/?tab=alert-settings",
+      "icons": [
+        {
+          "src": "https://cdn.builder.io/api/v1/image/assets%2F212686917e6a43feac2002a1e679ce72%2F4232d9a3a4bc400a91ef28288c1e35f6?format=webp&width=96",
+          "sizes": "96x96",
+          "type": "image/webp"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

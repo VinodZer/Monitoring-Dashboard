@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Mobile safe area insets for notch support */
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "cv01", "cv02", "cv03", "cv04";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Typography scale for consistent text sizes */
+  h1 { @apply text-2xl sm:text-3xl font-semibold leading-tight tracking-tight; }
+  h2 { @apply text-xl sm:text-2xl font-semibold leading-tight tracking-tight; }
+  h3 { @apply text-lg sm:text-xl font-medium leading-snug; }
+  h4 { @apply text-base sm:text-lg font-medium leading-snug; }
+  h5 { @apply text-sm sm:text-base font-medium leading-normal; }
+  h6 { @apply text-xs sm:text-sm font-medium leading-normal; }
+
+  /* Default text elements */
+  p { @apply text-sm sm:text-base leading-relaxed; }
+  small { @apply text-xs sm:text-sm; }
+
+  /* Smooth transitions for interactive elements */
+  button, a, [role="button"] {
+    @apply transition-colors duration-200 ease-in-out;
+  }
+
+  /* Form elements */
+  input, textarea, select {
+    @apply text-sm sm:text-base;
+  }
+
+  /* Table improvements */
+  table {
+    @apply text-sm;
+  }
+
+  /* Code and monospace improvements */
+  code, pre, .font-mono {
+    font-feature-settings: "liga" 0, "calt" 0;
+    text-rendering: optimizeSpeed;
+  }
+
+  /* Tabular numbers for better alignment */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Price display improvements */
+  .price-display {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: -0.025em;
+  }
+
+  /* Smooth color transitions for price changes */
+  .price-change {
+    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+
+  /* Better spacing for badges */
+  .badge-spacing {
+    letter-spacing: 0.025em;
+  }
+
+  /* Smooth hover effects */
+  .hover-lift {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .hover-lift:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Card improvements */
+  .card-smooth {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  .dark .card-smooth {
+    background: rgba(31, 41, 55, 0.95);
+  }
+
+  /* Better text contrast */
+  .text-enhanced {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Mobile-specific utilities */
+  @media (max-width: 768px) {
+    /* Touch-friendly button sizing - 44x44px minimum */
+    button, [role="button"], input[type="button"], input[type="submit"], .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Avoid 100vh issues on mobile (includes address bar) */
+    html, body {
+      height: 100%;
+    }
+
+    /* Bottom navigation safe area padding */
+    body {
+      padding-bottom: max(1rem, var(--safe-area-inset-bottom));
+    }
+
+    /* Ensure inputs are readable without zoom on iOS */
+    input, textarea, select, button {
+      font-size: 16px;
+    }
+
+    /* Better touch spacing for form elements */
+    input, textarea, select {
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    /* Optimize scrolling performance */
+    .scroll-smooth {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent text selection on long press for mobile */
+    .no-select {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+  }
+
+  /* Smooth scrolling for better mobile feel */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent layout shift from scrollbar */
+  body {
+    overflow-y: scroll;
+  }
+
+  /* Touch-friendly card interactions */
+  .card-touch {
+    @apply cursor-pointer transition-all duration-200 active:scale-95;
+  }
+
+  /* Improved focus states for mobile */
+  @media (hover: none) and (pointer: coarse) {
+    button:focus,
+    [role="button"]:focus,
+    a:focus {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+  }
+
+  /* Mobile gesture-friendly spacing */
+  .gesture-padding {
+    @apply p-4 sm:p-6;
+  }
+
+  /* Safe area padding helpers */
+  .safe-area-top {
+    padding-top: max(1rem, var(--safe-area-inset-top));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, var(--safe-area-inset-bottom));
+  }
+
+  .safe-area-left {
+    padding-left: max(1rem, var(--safe-area-inset-left));
+  }
+
+  .safe-area-right {
+    padding-right: max(1rem, var(--safe-area-inset-right));
+  }
+}

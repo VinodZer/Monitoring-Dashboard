@@ -1,0 +1,128 @@
+# PocketBase Integration Guide for Next.js
+
+Since I could not locate the Next.js project root in your current workspace, I have prepared the specific code files you need to create.
+
+## 1. Environment Variables
+
+Create or update `.env.local` in your Next.js project root:
+
+```env
+NEXT_PUBLIC_POCKETBASE_URL=https://db.vinod.app
+# OR if running locally:
+# NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
+```
+
+## 2. PocketBase Client (`lib/pocketbase.ts`)
+
+Create this file to initialize the PocketBase client (Singleton pattern).
+
+```typescript
+// lib/pocketbase.ts
+import PocketBase from 'pocketbase';
+
+const url = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
+export const pb = new PocketBase(url);
+```
+
+## 3. Tick Buffering Hook (`hooks/useTickBuffer.ts`)
+
+This hook implements the logic: "batch tick updates and send them to PocketBase every 5 seconds or when the buffer reaches 50 ticks".
+
+```typescript
+// hooks/useTickBuffer.ts
+import { useEffect, useRef } from 'react';
+import { pb } from '../lib/pocketbase';
+
+interface TickData {
+  instrument_token: number;
+  last_price: number;
+  [key: string]: any;
+}
+
+export function useTickBuffer() {
+  const bufferRef = useRef<TickData[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const flushBuffer = async () => {
+    if (bufferRef.current.length === 0) return;
+
+    const batch = [...bufferRef.current];
+    bufferRef.current = []; // Clear buffer immediately
+    
+    try {
+      // PocketBase helper to batch create is not native in JS SDK for single collection 
+      // in one request effectively without a loop or custom endpoint, 
+      // but we can loop or use a custom API endpoint if available.
+      // Based on standard usage, we loop or use Promise.all.
+      // For better performance, consider a custom PocketBase API route.
+      
+      // Attempting parallel creation (Caution: Rate limits)
+      const promises = batch.map(tick => {
+        return pb.collection('ticks').create({
+          instrument_token: tick.instrument_token,
+          last_price: tick.last_price,
+          volume: tick.volume || 0,
+          timestamp: new Date().toISOString(),
+          raw_data: tick
+        }).catch(err => console.error("Failed to save tick:", err));
+      });
+      
+      await Promise.all(promises);
+      console.log(`Flushed ${batch.length} ticks to PocketBase.`);
+      
+    } catch (err) {
+      console.error("Error flushing ticks:", err);
+    }
+  };
+
+  const addTick = (tick: TickData) => {
+    bufferRef.current.push(tick);
+
+    // Check size limit
+    if (bufferRef.current.length >= 50) {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        flushBuffer();
+        // Restart timer
+        timerRef.current = setInterval(flushBuffer, 5000);
+    }
+  };
+
+  useEffect(() => {
+    // Start timer
+    timerRef.current = setInterval(flushBuffer, 5000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      flushBuffer(); // Flush remaining on unmount
+    };
+  }, []);
+
+  return { addTick };
+}
+```
+
+## 4. Usage in your Component
+
+Integrate the hook where you receive WebSocket messages (e.g., in your Grid or Dashboard component).
+
+```typescript
+import { useTickBuffer } from '../hooks/useTickBuffer';
+
+// ... inside your component
+const { addTick } = useTickBuffer();
+
+// Inside your WebSocket onmessage handler:
+ws.onmessage = (event) => {
+    const tick = JSON.parse(event.data);
+    
+    // Update local state for UI
+    // ... 
+    
+    // Send to buffer
+    addTick(tick);
+};
+```
+
+## 5. Security Note regarding Public Access
+
+As per your instructions, ensure the `ticks` collection in PocketBase > Settings > API Rules > content of "Create Rule" is set to valid configuration (empty for public, or authenticated).

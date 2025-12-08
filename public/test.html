@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Market Feeds</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e293b;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        th,
+        td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background-color: #334155;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #2d3b4e;
+        }
+
+        .price {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .price.down {
+            color: #f87171;
+        }
+
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .connected .status-dot {
+            background-color: #4ade80;
+            box-shadow: 0 0 8px #4ade80;
+        }
+
+        .disconnected .status-dot {
+            background-color: #f87171;
+        }
+
+        #connection-status {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .stale {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Live Market Feeds</h1>
+        <div id="connection-status" class="disconnected">
+            <span class="status-dot"></span> <span id="status-text">Disconnected</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Instrument Token</th>
+                    <th>Price</th>
+                    <th>Last Updated</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="feed-body">
+                <!-- Rows will be added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const WS_URL = `wss://kite.rvinod.com/ticks?token=Dashboard@Zerodha`;
+        const feedBody = document.getElementById('feed-body');
+        const connectionStatus = document.getElementById('connection-status');
+        const statusText = document.getElementById('status-text');
+
+        const feeds = {};
+
+        function connect() {
+            const ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                connectionStatus.className = 'connected';
+                statusText.textContent = 'Connected';
+                console.log('Connected to WebSocket');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    updateFeed(data);
+                } catch (e) {
+                    console.error('Error parsing message:', e);
+                }
+            };
+
+            ws.onclose = () => {
+                connectionStatus.className = 'disconnected';
+                statusText.textContent = 'Disconnected - Reconnecting...';
+                console.log('Disconnected. Reconnecting in 3s...');
+                setTimeout(connect, 3000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                ws.close();
+            };
+        }
+
+        function updateFeed(data) {
+            const token = data.instrument_token;
+            if (!feeds[token]) {
+                createRow(data);
+            }
+
+            feeds[token] = data;
+            updateRow(data);
+        }
+
+        function createRow(data) {
+            const row = document.createElement('tr');
+            row.id = `row-${data.instrument_token}`;
+            row.innerHTML = `
+                <td class="symbol">${data.tradingsymbol || 'Unknown'}</td>
+                <td>${data.instrument_token}</td>
+                <td class="price">--</td>
+                <td class="time">--</td>
+                <td class="state">--</td>
+            `;
+            feedBody.appendChild(row);
+
+            // Sort rows by symbol
+            const rows = Array.from(feedBody.querySelectorAll('tr'));
+            rows.sort((a, b) => {
+                const symbolA = a.querySelector('.symbol').textContent;
+                const symbolB = b.querySelector('.symbol').textContent;
+                return symbolA.localeCompare(symbolB);
+            });
+
+            rows.forEach(r => feedBody.appendChild(r));
+        }
+
+        function updateRow(data) {
+            const row = document.getElementById(`row-${data.instrument_token}`);
+            if (!row) return;
+
+            const priceCell = row.querySelector('.price');
+            const timeCell = row.querySelector('.time');
+            const stateCell = row.querySelector('.state');
+
+            const oldPrice = parseFloat(priceCell.textContent.replace(/,/g, ''));
+            const newPrice = data.last_price;
+
+            priceCell.textContent = newPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            if (!isNaN(oldPrice)) {
+                if (newPrice > oldPrice) {
+                    priceCell.style.color = '#4ade80'; // Green
+                } else if (newPrice < oldPrice) {
+                    priceCell.style.color = '#f87171'; // Red
+                }
+            }
+
+            timeCell.textContent = new Date(data.timestamp).toLocaleTimeString();
+
+            if (data.stale) {
+                row.classList.add('stale');
+                stateCell.textContent = 'Stale';
+                stateCell.style.color = '#fbbf24';
+            } else {
+                row.classList.remove('stale');
+                stateCell.textContent = 'Live';
+                stateCell.style.color = '#4ade80';
+            }
+        }
+
+        connect();
+    </script>
+</body>
+
+</html>

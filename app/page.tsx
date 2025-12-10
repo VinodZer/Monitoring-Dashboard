@@ -70,7 +70,7 @@ export default function MarketDashboard() {
     updateConfiguration,
     clearAllAlerts,
     markAlertAsChecked,
-  } = useInactivityAlerts(ticks, { onAlert: logAlert })
+  } = useInactivityAlerts(ticks, isConnected, isFrozen, { onAlert: logAlert })
 
   const [selectedTab, setSelectedTab] = useState("kite")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -495,6 +495,8 @@ export default function MarketDashboard() {
                     </span>
                   )}
                 </TabsTrigger>
+
+
                 <TabsTrigger value="debug" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
                   <Settings className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                   Debug
@@ -547,6 +549,8 @@ export default function MarketDashboard() {
                 ticks={ticks}
               />
             </TabsContent>
+
+
 
             <TabsContent value="debug">
               <DebugDashboard

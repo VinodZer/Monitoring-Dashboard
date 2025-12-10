@@ -15,28 +15,26 @@ export function useTickStorage() {
         const batch = [...bufferRef.current]
         bufferRef.current = [] // Clear buffer immediately
 
-        try {
-            // Send batch to PocketBase
-            // PocketBase doesn't support bulk create natively in one API call unless using custom route or batch endpoint
-            // But standard SDK 'create' is one by one. 
-            // HOWEVER, concurrent requests are fine.
+        console.log(`[TickStorage] Flushing ${batch.length} ticks sequentially...`)
 
-            const promises = batch.map(tick => {
-                return pb.collection('ticks').create({
+        // SEQUENTIAL WRITE: Process one by one to avoid 503 (Too Many Requests)
+        let successCount = 0
+        for (const tick of batch) {
+            try {
+                await pb.collection('ticks').create({
                     instrument_token: tick.instrument_token,
                     last_price: tick.last_price,
                     volume: tick.volume || 0,
                     timestamp: new Date(tick.timestamp),
                     raw_data: tick
-                }, { requestKey: null }) // requestKey: null prevents auto-cancellation of concurrent requests
-            })
-
-            await Promise.allSettled(promises)
-            console.log(`[PocketBase] Flushed ${batch.length} ticks to DB`)
-
-        } catch (error) {
-            console.error("[PocketBase] Error flushing ticks:", error)
+                }, { requestKey: null })
+                successCount++
+            } catch (err) {
+                console.warn("[TickStorage] Failed to save individual tick:", err)
+            }
         }
+
+        console.log(`[TickStorage] Successfully saved ${successCount}/${batch.length} ticks.`)
     }, [])
 
     const onTick = useCallback((newTicks: TickData[]) => {

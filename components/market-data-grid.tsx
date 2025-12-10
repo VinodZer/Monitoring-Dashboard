@@ -310,16 +310,16 @@ const CombinedIndexCard = memo(function CombinedIndexCard({
                     }`}
                 >
                   {/* Background price chart */}
-                  <div className="absolute inset-0 pointer-events-none opacity-20">
+                  <div className="absolute inset-0 pointer-events-none">
                     <MiniPriceChart
                       ticks={allTicks}
                       instrumentToken={data.instrument_token}
                       height={80}
                       className="h-full w-full"
                       useBookPrice={true}
-                      strokeWidth={3}
-                      gradientOpacity={0.8}
-                      gradientEndOpacity={0.2}
+                      strokeWidth={2}
+                      gradientOpacity={0.2}
+                      gradientEndOpacity={0.05}
                     />
                   </div>
 

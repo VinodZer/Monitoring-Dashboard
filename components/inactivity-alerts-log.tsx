@@ -71,16 +71,17 @@ export function InactivityAlertsLog({ }: InactivityAlertsLogProps) {
           break
       }
 
+      console.log("Fetching logs with filter:", filter)
       const result = await pb.collection("alert_logs").getList<AlertLog>(1, 50, {
         sort: "-created",
         filter: filter,
-        fields: "id,created,instrument_name,alert_type,message,duration,missing_seconds,market_session",
+        // fields: "id,created,instrument_name,alert_type,message,duration,missing_seconds,market_session",
         skipTotal: true,
       })
       setLogs(result.items)
     } catch (err: any) {
       console.error("Failed to fetch logs:", err)
-      setError("Failed to load logs.")
+      setError(`Failed to load logs: ${err.message || JSON.stringify(err)}`)
     } finally {
       setIsLoading(false)
     }

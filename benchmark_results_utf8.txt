@@ -1,0 +1,4 @@
+﻿Connecting to https://db.vinod.app...
+[Latency Check] Fetch 1 record: 923.38ms
+[Widget Load] Fetch 50 records: 846.95ms
+[Current Load] Fetch 500 records: 643.68ms

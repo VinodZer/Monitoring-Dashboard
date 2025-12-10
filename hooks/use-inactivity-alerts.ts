@@ -6,6 +6,7 @@ import { shouldAlertsBeActive, getDetailedMarketStatus, isInMarketCloseBuffer } 
 import { StaleDataDetector } from "@/lib/stale-data-detector"
 import { depthPlusLtp } from "@/utils/depth-ltp"
 import { getExchangeFromName, getDefaultDpltpDuration } from "@/utils/exchange-detection"
+import pb from "@/lib/pocketbase"
 
 /**
  * Resolve instrument name for a TickData entry. Prefers tradingsymbol when
@@ -130,6 +131,8 @@ function defaultConfigForInstrument(token: number, instrumentName: string): Inac
  */
 export function useInactivityAlerts(
   ticks: TickData[],
+  isConnected: boolean,
+  isFrozen: boolean,
   options?: { onAlert?: (alert: InactivityAlert) => void },
 ) {
   const [configurations, setConfigurations] = useState<Map<number, InactivityAlertConfig>>(new Map())
@@ -374,7 +377,35 @@ export function useInactivityAlerts(
     [stopAlertSound],
   )
 
+  // Reset state when disconnected
   useEffect(() => {
+    if (!isConnected) {
+      symbolStates.current.forEach((_, token) => {
+        stopAlertSound(token)
+      })
+      symbolStates.current.clear()
+      setInactiveSymbols(new Set())
+      // We purposefully don't clear the alerts list so the user can see history,
+      // but we stop the active "alerting" state and sounds.
+    }
+  }, [isConnected, stopAlertSound])
+
+  useEffect(() => {
+    // If not connected, do not process ticks for alerts
+    if (!isConnected) return
+
+    // If global feed is frozen (likely internet loss but socket open), 
+    // suppress individual alerts to avoid "all segments" firing.
+    if (isFrozen) {
+      // Option: we could clear state here too, so when it unfreezes we start fresh
+      if (symbolStates.current.size > 0) {
+        symbolStates.current.forEach((_, token) => stopAlertSound(token))
+        symbolStates.current.clear()
+        setInactiveSymbols(new Set())
+      }
+      return
+    }
+
     const latestTicks = new Map<number, TickData>()
     for (const tick of ticks) {
       if (
@@ -554,6 +585,26 @@ export function useInactivityAlerts(
               newSet.delete(alert.instrumentToken)
               return newSet
             })
+
+            // Save to PocketBase
+            if (!alert.checked) {
+              const logData = {
+                instrument_name: alert.instrumentName,
+                alert_type: alert.alertType,
+                message: alert.alertType === "ltp"
+                  ? `LTP unchanged for ${alert.missingSeconds ?? alert.duration}s`
+                  : `Depth+LTP unchanged for ${alert.missingSeconds ?? alert.duration}s`,
+                duration: alert.duration,
+                missing_seconds: alert.missingSeconds || alert.duration,
+                market_session: alert.marketSession,
+                created: new Date().toISOString()
+              }
+
+              pb.collection("alert_logs").create(logData)
+                .then(() => console.log("Alert log saved"))
+                .catch((err) => console.error("Failed to save alert log:", err))
+            }
+
             return { ...alert, checked: true }
           }
           return alert

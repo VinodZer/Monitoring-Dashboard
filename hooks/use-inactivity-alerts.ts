@@ -385,6 +385,9 @@ export function useInactivityAlerts(
       })
       symbolStates.current.clear()
       setInactiveSymbols(new Set())
+      // Reset detectors to prevent false positives on reconnect
+      ltpDetectorRef.current = new StaleDataDetector()
+      dpltpDetectorRef.current = new StaleDataDetector()
       // We purposefully don't clear the alerts list so the user can see history,
       // but we stop the active "alerting" state and sounds.
     }
@@ -397,12 +400,14 @@ export function useInactivityAlerts(
     // If global feed is frozen (likely internet loss but socket open), 
     // suppress individual alerts to avoid "all segments" firing.
     if (isFrozen) {
-      // Option: we could clear state here too, so when it unfreezes we start fresh
       if (symbolStates.current.size > 0) {
         symbolStates.current.forEach((_, token) => stopAlertSound(token))
         symbolStates.current.clear()
         setInactiveSymbols(new Set())
       }
+      // Reset detectors to avoid stale state on unfreeze
+      ltpDetectorRef.current = new StaleDataDetector()
+      dpltpDetectorRef.current = new StaleDataDetector()
       return
     }
 

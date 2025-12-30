@@ -20,7 +20,12 @@ A real-time financial market data monitoring dashboard built with **Next.js**. I
 - **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide Icons](https://lucide.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Visualization**: [Recharts](https://recharts.org/) & Custom SVG Sparklines
-- **Validation**: [Zod](https://zod.dev/)
+- **Zod**: TypeScript-first schema validation for data integrity.
+
+## 📚 Technical Documentation
+
+For a detailed explanation of every function, data source logic, and internal architecture, please refer to:
+- [TECHNICAL_DEEP_DIVE.md](file:///home/vinod.r/Monitoring-Dashboard/TECHNICAL_DEEP_DIVE.md) — Comprehensive "A to Z" technical guide.
 
 ## 🏃 Getting Started
 

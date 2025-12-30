@@ -3,6 +3,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import GlobalErrorGuard from '@/components/global-error-guard'
 import { PWARegister } from '@/components/pwa-register'
+import { InternetStatusAlert } from '@/components/internet-status-alert'
 
 export const metadata: Metadata = {
   title: 'Market Ticks Monitor - Real-Time Trading Dashboard',
@@ -73,7 +74,10 @@ export default function RootLayout({
           {/* Global client-side guard to suppress noisy third-party errors (e.g., FullStory) */}
           <GlobalErrorGuard />
           {/* PWA service worker registration and mobile optimizations */}
+          {/* PWA service worker registration and mobile optimizations */}
           <PWARegister />
+          {/* Global Internet Connection Alert */}
+          <InternetStatusAlert />
           {children}
         </ThemeProvider>
       </body>

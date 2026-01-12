@@ -41,10 +41,17 @@ export function useFeedComparison(
                 // Pass exchange to normalization
                 const normalized = normalizeSymbol(tick.tradingsymbol, tick.exchange)
                 instrumentSet.add(normalized)
-                feed1Map.set(normalized, tick)
+
+                // Only set if not already present (ticks are ordered newest first)
+                if (!feed1Map.has(normalized)) {
+                    feed1Map.set(normalized, tick)
+                }
 
                 const existing = originalSymbolsMap.get(normalized) || {}
-                originalSymbolsMap.set(normalized, { ...existing, feed1: tick.tradingsymbol })
+                // Only set symbol if we haven't seen this one yet (though symbol is constant per token usually)
+                if (!existing.feed1) {
+                    originalSymbolsMap.set(normalized, { ...existing, feed1: tick.tradingsymbol })
+                }
             }
         })
 
@@ -54,10 +61,16 @@ export function useFeedComparison(
                 // Pass exchange to normalization
                 const normalized = normalizeSymbol(tick.tradingsymbol, tick.exchange)
                 instrumentSet.add(normalized)
-                feed2Map.set(normalized, tick)
+
+                // Only set if not already present
+                if (!feed2Map.has(normalized)) {
+                    feed2Map.set(normalized, tick)
+                }
 
                 const existing = originalSymbolsMap.get(normalized) || {}
-                originalSymbolsMap.set(normalized, { ...existing, feed2: tick.tradingsymbol })
+                if (!existing.feed2) {
+                    originalSymbolsMap.set(normalized, { ...existing, feed2: tick.tradingsymbol })
+                }
             }
         })
 

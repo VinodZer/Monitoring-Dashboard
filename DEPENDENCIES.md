@@ -30,7 +30,6 @@ This file provides a comprehensive list of all dependencies used in the **Monito
 ### Data Visualization & Utilities
 - **recharts**: Composable charting library for rendering market data trends.
 - **date-fns**: Modern date utility library for formatting and manipulating timestamps.
-- **pocketbase**: Client SDK for the backend database and authentication.
 
 ### Styling
 - **tailwindcss**: Utility-first CSS framework for rapid design execution.

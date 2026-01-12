@@ -6,7 +6,6 @@ import { shouldAlertsBeActive, getDetailedMarketStatus, isInMarketCloseBuffer } 
 import { StaleDataDetector } from "@/lib/stale-data-detector"
 import { depthPlusLtp } from "@/utils/depth-ltp"
 import { getExchangeFromName, getDefaultDpltpDuration } from "@/utils/exchange-detection"
-import pb from "@/lib/pocketbase"
 
 /**
  * Resolve instrument name for a TickData entry. Prefers tradingsymbol when
@@ -591,9 +590,12 @@ export function useInactivityAlerts(
               return newSet
             })
 
-            // Save to PocketBase
+            // Save to localStorage
             if (!alert.checked) {
               const logData = {
+                id: alert.id, // Ensure ID is preserved
+                created: new Date().toISOString(),
+                instrument_token: alert.instrumentToken,
                 instrument_name: alert.instrumentName,
                 alert_type: alert.alertType,
                 message: alert.alertType === "ltp"
@@ -602,12 +604,19 @@ export function useInactivityAlerts(
                 duration: alert.duration,
                 missing_seconds: alert.missingSeconds || alert.duration,
                 market_session: alert.marketSession,
-                created: new Date().toISOString()
+                raw_data: { timestamp: Date.now() } // Minimal raw data
               }
 
-              pb.collection("alert_logs").create(logData)
-                .then(() => console.log("Alert log saved"))
-                .catch((err) => console.error("Failed to save alert log:", err))
+              try {
+                const STORAGE_KEY = 'local_alert_logs'
+                const stored = localStorage.getItem(STORAGE_KEY)
+                const existing = stored ? JSON.parse(stored) : []
+                const updated = [logData, ...existing].slice(0, 200)
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+                window.dispatchEvent(new Event("storage"))
+              } catch (err) {
+                console.error("Failed to save alert log locally:", err)
+              }
             }
 
             return { ...alert, checked: true }

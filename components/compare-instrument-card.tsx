@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarketDepthView } from "@/components/market-depth-view"
 import type { TickData } from "@/hooks/use-tick-data"
-import { comparePrices, formatPrice } from "@/utils/price-comparison"
+import { formatPrice } from "@/utils/price-comparison"
 
 interface CompareInstrumentCardProps {
     /** Trading symbol of the instrument */
@@ -19,7 +19,6 @@ interface CompareInstrumentCardProps {
 export function CompareInstrumentCard({ symbol, tick1, tick2 }: CompareInstrumentCardProps) {
     const price1 = tick1?.last_price || 0
     const price2 = tick2?.last_price || 0
-    const { diff, spread } = comparePrices(price1, price2)
 
     const getPriceColor = (price: number, avgPrice: number) => {
         if (!price || !avgPrice) return "text-gray-900 dark:text-gray-100"
@@ -43,12 +42,31 @@ export function CompareInstrumentCard({ symbol, tick1, tick2 }: CompareInstrumen
                             </div>
                         </div>
 
-                        {/* Center: Difference */}
+                        {/* Center: Time Lag */}
                         <div className="text-center">
-                            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">DIFF</div>
-                            <div className={`text-lg font-bold font-mono ${diff > 0 ? "text-green-600" : diff < 0 ? "text-red-600" : "text-gray-900 dark:text-gray-100"}`}>
-                                {diff !== 0 ? diff.toFixed(2) : "0.00"}
-                            </div>
+                            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">LAG (s)</div>
+                            {(() => {
+                                const t1 = tick1?.timestamp || 0
+                                const t2 = tick2?.timestamp || 0
+                                // If both have timestamps, calc lag. Positive = Tick2 is newer (Kite lagging)
+                                // Negative = Tick1 is newer (Upstox lagging)
+                                const valid = t1 > 0 && t2 > 0
+                                const lag = valid ? (t2 - t1) / 1000 : 0
+
+                                let colorClass = "text-gray-900 dark:text-gray-100"
+                                if (valid) {
+                                    if (lag > 5) colorClass = "text-red-600 animate-pulse"
+                                    else if (lag > 1) colorClass = "text-orange-500"
+                                    else if (lag < -5) colorClass = "text-blue-600" // Upstox lagging heavily
+                                    else colorClass = "text-green-600"
+                                }
+
+                                return (
+                                    <div className={`text-lg font-bold font-mono ${colorClass}`}>
+                                        {valid ? lag.toFixed(2) : "-"}
+                                    </div>
+                                )
+                            })()}
                         </div>
 
                         {/* Right: Upstox Price */}

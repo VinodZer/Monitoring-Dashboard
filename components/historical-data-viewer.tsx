@@ -8,7 +8,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Calendar as CalendarIcon, Search, Download, Loader2, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
-import pb from "@/lib/pocketbase"
 import type { TickData } from "@/hooks/use-tick-data"
 
 // Helper to format date for input
@@ -46,49 +45,9 @@ export function HistoricalDataViewer({ knownInstruments = [] }: HistoricalDataVi
     const [totalItems, setTotalItems] = useState(0)
 
     const fetchData = async (newPage = 1) => {
-        setIsLoading(true)
-        setError(null)
-        try {
-            // Build filter
-            const filters = []
-
-            if (selectedToken && selectedToken !== "all") {
-                filters.push(`instrument_token = ${selectedToken}`)
-            }
-
-            if (startTime) {
-                filters.push(`timestamp >= "${new Date(startTime).toISOString()}"`)
-            }
-
-            if (endTime) {
-                filters.push(`timestamp <= "${new Date(endTime).toISOString()}"`)
-            }
-
-            const filterString = filters.join(" && ")
-
-            setDebugInfo({ filter: filterString, page: newPage, limit: parseInt(limit) })
-
-            const result = await pb.collection("ticks").getList(newPage, parseInt(limit), {
-                filter: filterString,
-                sort: "-timestamp",
-            })
-
-            setTicks(result.items)
-            setPage(result.page)
-            setTotalPages(result.totalPages)
-            setTicks(result.items)
-            setPage(result.page)
-            setTotalPages(result.totalPages)
-            setTotalItems(result.totalItems)
-            setDebugInfo(prev => ({ ...prev, success: true, totalItems: result.totalItems, itemsFound: result.items.length }))
-
-        } catch (error: any) {
-            console.error("Failed to fetch historical data:", error)
-            setError(error.message || "Failed to fetch data. Please check connection.")
-            setDebugInfo({ error: error.message, stack: error.stack })
-        } finally {
-            setIsLoading(false)
-        }
+        setIsLoading(false)
+        setTicks([])
+        setError("Historical data storage is disabled in local mode.")
     }
 
     const handleSearch = () => {

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, RefreshCw, AlertTriangle, Calendar, Clock, Activity, Search, Filter } from "lucide-react"
 import { format, startOfDay, subDays, startOfYesterday, endOfYesterday } from "date-fns"
-import pb from "@/lib/pocketbase"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -35,42 +34,37 @@ export default function LogsPage() {
         setIsLoading(true)
         setError(null)
         try {
-            let filterString = ""
+            const stored = localStorage.getItem('local_alert_logs')
+            let items: AlertLog[] = stored ? JSON.parse(stored) : []
+
             const now = new Date()
 
             // Date Filter
-            switch (dateFilter) {
-                case "today":
-                    const todayStart = startOfDay(now).toISOString().replace("T", " ")
-                    filterString = `created >= "${todayStart}"`
-                    break
-                case "yesterday":
-                    const yestStart = startOfYesterday().toISOString().replace("T", " ")
-                    const yestEnd = endOfYesterday().toISOString().replace("T", " ")
-                    filterString = `created >= "${yestStart}" && created <= "${yestEnd}"`
-                    break
-                case "week":
-                    const weekStart = subDays(startOfDay(now), 7).toISOString().replace("T", " ")
-                    filterString = `created >= "${weekStart}"`
-                    break
-                default:
-                    filterString = ""
-                    break
+            if (dateFilter !== 'all') {
+                items = items.filter(log => {
+                    const logDate = new Date(log.created)
+
+                    if (dateFilter === 'today') {
+                        return startOfDay(logDate).getTime() === startOfDay(now).getTime()
+                    }
+                    if (dateFilter === 'yesterday') {
+                        const yest = startOfYesterday()
+                        return logDate >= yest && logDate < startOfDay(now)
+                    }
+                    if (dateFilter === 'week') {
+                        const weekAgo = subDays(startOfDay(now), 7)
+                        return logDate >= weekAgo
+                    }
+                    return true
+                })
             }
 
-            // Combine with search if present (Client-side filtering is often smoother for small datasets, 
-            // but here we might need server-side if data is huge. For now, sticking to date filter on server)
+            // Apply search filter if needed here or keep separate
 
-            const result = await pb.collection("alert_logs").getList<AlertLog>(1, 100, {
-                sort: "-created",
-                filter: filterString,
-                fields: "id,created,instrument_name,alert_type,message,duration,missing_seconds,market_session",
-                skipTotal: true,
-            })
-            setLogs(result.items)
+            setLogs(items)
         } catch (err: any) {
             console.error("Failed to fetch logs:", err)
-            setError("Failed to load logs. Is PocketBase running?")
+            setError("Failed to load logs.")
         } finally {
             setIsLoading(false)
         }

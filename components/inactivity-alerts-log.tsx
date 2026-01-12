@@ -16,7 +16,6 @@ import {
   ArrowUpRight,
 } from "lucide-react"
 import { format, startOfDay, subDays, startOfYesterday, endOfYesterday } from "date-fns"
-import pb from "@/lib/pocketbase"
 import type { InactivityAlert } from "@/hooks/use-inactivity-alerts"
 
 interface InactivityAlertsLogProps {
@@ -48,37 +47,32 @@ export function InactivityAlertsLog({ }: InactivityAlertsLogProps) {
     setIsLoading(true)
     setError(null)
     try {
-      let filter = ""
+      const stored = localStorage.getItem('local_alert_logs')
+      let items: AlertLog[] = stored ? JSON.parse(stored) : []
+
       const now = new Date()
 
-      switch (dateFilter) {
-        case "today":
-          const todayStart = startOfDay(now).toISOString().replace("T", " ")
-          filter = `created >= "${todayStart}"`
-          break
-        case "yesterday":
-          const yestStart = startOfYesterday().toISOString().replace("T", " ")
-          const yestEnd = endOfYesterday().toISOString().replace("T", " ")
-          filter = `created >= "${yestStart}" && created <= "${yestEnd}"`
-          break
-        case "week":
-          const weekStart = subDays(startOfDay(now), 7).toISOString().replace("T", " ")
-          filter = `created >= "${weekStart}"`
-          break
-        case "all":
-        default:
-          filter = ""
-          break
+      // Client-side filtering
+      if (dateFilter !== 'all') {
+        items = items.filter(log => {
+          const logDate = new Date(log.created)
+
+          if (dateFilter === 'today') {
+            return startOfDay(logDate).getTime() === startOfDay(now).getTime()
+          }
+          if (dateFilter === 'yesterday') {
+            const yest = startOfYesterday()
+            return logDate >= yest && logDate < startOfDay(now)
+          }
+          if (dateFilter === 'week') {
+            const weekAgo = subDays(startOfDay(now), 7)
+            return logDate >= weekAgo
+          }
+          return true
+        })
       }
 
-      console.log("Fetching logs with filter:", filter)
-      const result = await pb.collection("alert_logs").getList<AlertLog>(1, 50, {
-        sort: "-created",
-        filter: filter,
-        // fields: "id,created,instrument_name,alert_type,message,duration,missing_seconds,market_session",
-        skipTotal: true,
-      })
-      setLogs(result.items)
+      setLogs(items)
     } catch (err: any) {
       console.error("Failed to fetch logs:", err)
       setError(`Failed to load logs: ${err.message || JSON.stringify(err)}`)
@@ -89,6 +83,14 @@ export function InactivityAlertsLog({ }: InactivityAlertsLogProps) {
 
   useEffect(() => {
     fetchLogs()
+
+    // Listen for storage events (cross-tab) and custom window events (same-tab)
+    const handleStorageChange = () => fetchLogs()
+    window.addEventListener('storage', handleStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
   }, [dateFilter])
 
   return (
